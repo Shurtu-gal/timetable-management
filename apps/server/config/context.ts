@@ -1,15 +1,18 @@
 import { Request } from 'express';
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, User } from '@prisma/client';
+import { verifyUser } from 'helpers';
 
 export const prisma = new PrismaClient();
 
 export interface Context {
   prisma: PrismaClient;
   req: Request;
+  auth?: User;
 }
 
 export const context = async ({ req }: { req: Request }): Promise<Context> => ({
   prisma,
   req,
+  auth: (await verifyUser(req)) || undefined,
 });
