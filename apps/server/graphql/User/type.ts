@@ -67,3 +67,11 @@ export const User = objectType({
     });
   },
 });
+
+export const AuthPayload = objectType({
+  name: 'AuthPayload',
+  definition(t) {
+    t.string('token');
+    t.nonNull.field('user', { type: 'User' });
+  },
+});

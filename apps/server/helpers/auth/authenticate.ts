@@ -4,7 +4,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 
 type Decoded = JwtPayload & {
   email?: string;
-  id: number;
+  userId: number;
   role: string;
 };
 
@@ -18,7 +18,7 @@ export const verifyUser = async (req: Request) => {
   const decoded = jwt.verify(bearer, JWT_SECRET || '') as Decoded;
 
   const authUser = await prisma.user.findUnique({
-    where: { id: decoded.id },
+    where: { id: decoded.userId },
   });
 
   return authUser;
