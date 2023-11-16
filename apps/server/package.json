@@ -4,7 +4,7 @@
   "description": "Server for timetable management system",
   "main": "index.ts",
   "scripts": {
-    "dev": "nodemon --exec ts-node --project tsconfig.json -r tsconfig-paths/register index.ts",
+    "dev": "nodemon --watch '**/*' -e json,js,ts --exec ts-node --project tsconfig.json -r tsconfig-paths/register index.ts",
     "start": "npm run prisma:update && npm run start:server",
     "start:server": "node -r ts-node/register/transpile-only -r tsconfig-paths/register dist/index.js",
     "prisma:update": "prisma db push --schema=./prisma/schema.prisma",
