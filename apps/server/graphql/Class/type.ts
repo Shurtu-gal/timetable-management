@@ -1,16 +1,15 @@
-import { objectType } from 'nexus';
+import { inputObjectType, objectType } from 'nexus';
 
 export const Class = objectType({
   name: 'Class',
   description: 'Class',
   definition(t) {
     t.nonNull.int('id');
-    t.nonNull.string('name');
     t.string('description');
     t.string('department');
     t.int('semester');
     t.nonNull.int('collegeId');
-    t.nonNull.int('facultyId');
+    t.int('facultyId');
     t.date('createdAt');
     t.date('updatedAt');
 
@@ -30,10 +29,22 @@ export const Class = objectType({
       resolve: async (parent, _, { prisma }) => {
         return await prisma.teacher.findUnique({
           where: {
-            id: parent.facultyId,
+            id: parent.facultyId || undefined,
           },
         });
       },
     });
+  },
+});
+
+export const ClassCreateInputType = inputObjectType({
+  name: 'ClassCreateInputType',
+  description: 'ClassCreateInputType',
+  definition(t) {
+    t.nonNull.int('semester');
+    t.nonNull.string('department');
+    t.int('collegeId');
+    t.int('facultyId');
+    t.string('description');
   },
 });

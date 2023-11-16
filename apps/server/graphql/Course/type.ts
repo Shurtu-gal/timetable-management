@@ -1,4 +1,4 @@
-import { objectType } from 'nexus';
+import { inputObjectType, objectType } from 'nexus';
 
 export const Course = objectType({
   name: 'Course',
@@ -33,5 +33,16 @@ export const Course = objectType({
         });
       },
     });
+  },
+});
+
+export const CourseCreateInputType = inputObjectType({
+  name: 'CourseCreateInputType',
+  definition(t) {
+    t.nonNull.string('name');
+    t.nonNull.int('credits');
+    t.string('description');
+    t.string('type');
+    t.string('collegeId');
   },
 });

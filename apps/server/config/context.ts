@@ -3,7 +3,9 @@ import { Request } from 'express';
 import { PrismaClient, User } from '@prisma/client';
 import { verifyUser } from '../helpers';
 
-export const prisma = new PrismaClient();
+export const prisma = new PrismaClient({
+  // log: ['query', 'info', 'warn'],
+});
 
 export interface Context {
   prisma: PrismaClient;

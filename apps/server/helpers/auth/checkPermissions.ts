@@ -54,7 +54,6 @@ const checkBasePermissions = async ({
   errorHandler,
   requiredRoles,
 }: CheckPermissionsType) => {
-  console.log(requiredRoles);
   if (!ctx.auth) return errorHandler(ERRORS.UNAUTHORIZED);
 
   try {
