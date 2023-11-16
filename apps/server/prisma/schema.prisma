@@ -93,8 +93,8 @@ model Class {
   college     College   @relation(fields: [collegeId], references: [id])
   description String
   semester    Int
-  facadId     Int
-  facad       Teacher   @relation(fields: [facadId], references: [id])
+  facultyId     Int
+  faculty       Teacher   @relation(fields: [facultyId], references: [id])
   department  String
   lectures    Lecture[]
   students    Student[]
@@ -106,6 +106,7 @@ model Course {
   id          Int       @id @default(autoincrement())
   name        String
   type        String
+  credits     Int?
   collegeId   Int       @unique
   college     College   @relation(fields: [collegeId], references: [id])
   description String

@@ -1,9 +1,9 @@
 import http from 'http';
-import app from '@rest/server';
+import app from './rest/server';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
-import { Context, schema, context, PORT, winston } from '@config';
+import { Context, schema, context, PORT, winston } from './config';
 
 async function run() {
   const logger = winston('server');

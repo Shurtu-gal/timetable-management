@@ -1,4 +1,4 @@
-import { JWT_SECRET, prisma } from '@config';
+import { JWT_SECRET, prisma } from '../../config';
 import { Request } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 

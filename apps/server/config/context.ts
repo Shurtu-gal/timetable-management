@@ -1,7 +1,7 @@
 import { Request } from 'express';
 
 import { PrismaClient, User } from '@prisma/client';
-import { verifyUser } from 'helpers';
+import { verifyUser } from '../helpers';
 
 export const prisma = new PrismaClient();
 

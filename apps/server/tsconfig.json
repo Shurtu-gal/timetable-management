@@ -10,16 +10,6 @@
     "module": "CommonJS",
     "moduleResolution": "node",
     "baseUrl": "./",
-    "paths": {
-      "@config": ["config"],
-      "@constants": ["constants"],
-      "@types": ["types"],
-      "@utils": ["utils"],
-      "@nexus/*": ["nexus_generated/*"],
-      "@app/*": ["graphql/*"],
-      "@rest/*": ["rest/*"],
-      "*": ["*"]
-    },
     "resolveJsonModule": true,
     "sourceMap": true,
     "outDir": "./dist",
