@@ -1,0 +1,31 @@
+{
+  "name": "timetable-management",
+  "version": "0.0.1",
+  "description": "Timetable management system for college",
+  "main": "index.js",
+  "scripts": {
+    "lint:client": "turbo lint --filter=client",
+    "lint:server": "turbo lint --filter=server",
+    "lint": "turbo lint",
+    "format": "npx prettier --write .",
+    "prepare": "husky install"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "workspaces": [
+    "apps/*"
+  ],
+  "devDependencies": {
+    "eslint": "^8.53.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^15.1.0",
+    "prettier": "^3.1.0",
+    "turbo": "^1.10.4"
+  },
+  "lint-staged": {
+    "*": [
+      "npm run format"
+    ]
+  }
+}
