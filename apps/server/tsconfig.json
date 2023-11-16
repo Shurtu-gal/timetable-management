@@ -9,7 +9,6 @@
     /* Modules */
     "module": "CommonJS",
     "moduleResolution": "node",
-    "baseUrl": "./",
     "resolveJsonModule": true,
     "sourceMap": true,
     "outDir": "./dist",

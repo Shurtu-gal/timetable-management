@@ -54,10 +54,15 @@ const checkBasePermissions = async ({
   errorHandler,
   requiredRoles,
 }: CheckPermissionsType) => {
+  console.log(requiredRoles);
   if (!ctx.auth) return errorHandler(ERRORS.UNAUTHORIZED);
 
   try {
-    if (requiredRoles.some(role => role === ctx.auth?.role)) {
+    if (
+      requiredRoles.some(role => role === ctx.auth?.role) ||
+      ctx.auth?.role === ROLE.SUPERADMIN ||
+      requiredRoles.length === 0
+    ) {
       return successHandler();
     }
 
@@ -71,7 +76,7 @@ const checkBasePermissions = async ({
 export const checkPermissions = (
   context: Context,
   requiredRoles: ROLE[],
-): Promise<boolean | Error | Response<unknown, Record<string, unknown>>> => {
+): Promise<boolean | Error> => {
   const successHandler = () => true;
 
   return checkBasePermissions({
@@ -79,5 +84,5 @@ export const checkPermissions = (
     successHandler,
     errorHandler: gqlErrorHandler,
     requiredRoles,
-  });
+  }) as Promise<boolean | Error>;
 };
