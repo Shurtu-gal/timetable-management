@@ -1,4 +1,4 @@
-import { objectType } from 'nexus';
+import { inputObjectType, objectType } from 'nexus';
 
 export const TimeSlot = objectType({
   name: 'TimeSlot',
@@ -39,5 +39,19 @@ export const TimeSlot = objectType({
         });
       },
     });
+  },
+});
+
+export const TimeSlotCreateInputType = inputObjectType({
+  name: 'TimeSlotCreateInputType',
+  definition(t) {
+    t.nonNull.string('day');
+    t.nonNull.string('startTime');
+    t.nonNull.string('endTime');
+    t.nonNull.int('classId');
+    t.nonNull.int('courseId');
+    t.date('date');
+    t.boolean('extraClass');
+    t.string('room');
   },
 });

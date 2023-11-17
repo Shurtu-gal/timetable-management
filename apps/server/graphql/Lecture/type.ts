@@ -1,4 +1,5 @@
-import { objectType } from 'nexus';
+import { inputObjectType, objectType } from 'nexus';
+import { checkPermissions } from '../../helpers/auth/checkPermissions';
 
 export const Lecture = objectType({
   name: 'Lecture',
@@ -55,6 +56,27 @@ export const Lecture = objectType({
           },
         });
       },
+    });
+  },
+});
+
+export const CreateLectureInputType = inputObjectType({
+  name: 'CreateLectureInputType',
+  definition(t) {
+    t.nonNull.string('name');
+    t.nonNull.int('courseId');
+    t.nonNull.int('classId');
+    t.int('instructorId');
+    t.string('description');
+    t.string('section');
+    t.field('instructor', {
+      type: 'TeacherCreateNodeType',
+      authorize: (_, __, ctx) => {
+        return checkPermissions(ctx, ['SUPERADMIN', 'ADMIN']);
+      },
+    });
+    t.list.nonNull.field('timeSlots', {
+      type: 'TimeSlotCreateInputType',
     });
   },
 });

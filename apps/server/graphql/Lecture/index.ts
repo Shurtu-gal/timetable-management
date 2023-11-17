@@ -1,3 +1,3 @@
-// export * from './mutation'
+export * from './mutation';
 // export * from './queries'
 export * from './type';

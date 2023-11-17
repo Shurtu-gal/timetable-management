@@ -107,8 +107,6 @@ export const createCollege = mutationField('createCollege', {
             },
           },
         });
-
-        console.log(teacher_);
       } else if (teacher.userId) {
         [teacher_] = await ctx.prisma.$transaction([
           ctx.prisma.teacher.create({
