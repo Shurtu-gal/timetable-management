@@ -1,4 +1,5 @@
-import { objectType } from 'nexus';
+import { inputObjectType, objectType } from 'nexus';
+import { checkPermissions } from '../../helpers/auth/checkPermissions';
 
 export const Teacher = objectType({
   name: 'Teacher',
@@ -51,6 +52,21 @@ export const Teacher = objectType({
             facultyId: parent.id,
           },
         });
+      },
+    });
+  },
+});
+
+export const TeacherCreateNodeType = inputObjectType({
+  name: 'TeacherCreateNodeType',
+  definition(t) {
+    t.int('userId');
+    t.int('collegeId');
+    t.string('department');
+    t.field('user', {
+      type: 'UserCreateInputType',
+      authorize: (_, __, ctx) => {
+        return checkPermissions(ctx, ['SUPERADMIN', 'ADMIN']);
       },
     });
   },

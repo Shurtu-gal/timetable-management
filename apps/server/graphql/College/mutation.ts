@@ -1,5 +1,6 @@
 import { mutationField, nonNull } from 'nexus';
 import { checkPermissions } from '../../helpers/auth/checkPermissions';
+import { Teacher } from '@prisma/client';
 
 export const createCollege = mutationField('createCollege', {
   type: 'College',
@@ -19,7 +20,7 @@ export const createCollege = mutationField('createCollege', {
       },
     });
 
-    return ctx.prisma.college.create({
+    const _college = await ctx.prisma.college.create({
       data: {
         name: data.name,
         description: data.description || undefined,
@@ -59,7 +60,93 @@ export const createCollege = mutationField('createCollege', {
             }
           : undefined,
       },
+      include: {
+        admin: true,
+        classes: true,
+        courses: true,
+        teachers: true,
+        _count: true,
+      },
     });
+
+    if (!_college.id) {
+      throw new Error('College not created');
+    }
+
+    /**
+     * @abstract As prisma does not support nested createMany, we have to create teachers separately
+     * @see https://github.com/prisma/prisma/issues/5455
+     */
+
+    const teachers_: Teacher[] = [];
+
+    data.teachers?.forEach(async teacher => {
+      let teacher_;
+      if (teacher.user) {
+        teacher_ = await ctx.prisma.teacher.create({
+          data: {
+            department: teacher.department || undefined,
+            user: {
+              create: {
+                email: teacher.user.email || undefined,
+                firstName: teacher.user.firstName,
+                lastName: teacher.user.lastName,
+                mobile: teacher.user.mobile || undefined,
+                profile: teacher.user.profile || undefined,
+                dob: teacher.user.dob || undefined,
+                uid: teacher.user.uid,
+                gender: teacher.user.gender,
+                password: teacher.user.password,
+                role: 'TEACHER',
+              },
+            },
+            college: {
+              connect: {
+                id: _college.id,
+              },
+            },
+          },
+        });
+
+        console.log(teacher_);
+      } else if (teacher.userId) {
+        [teacher_] = await ctx.prisma.$transaction([
+          ctx.prisma.teacher.create({
+            data: {
+              department: teacher.department || undefined,
+              user: {
+                connect: {
+                  id: teacher.userId,
+                },
+              },
+              college: {
+                connect: {
+                  id: _college.id,
+                },
+              },
+            },
+          }),
+          ctx.prisma.user.update({
+            where: {
+              id: teacher.userId,
+            },
+            data: {
+              role: 'TEACHER',
+            },
+          }),
+        ]);
+      } else {
+        teacher_ = null;
+      }
+
+      if (teacher_) {
+        teachers_.push(teacher_);
+      }
+    });
+
+    _college.teachers = teachers_;
+
+    return _college;
   },
 });
 

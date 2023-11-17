@@ -55,7 +55,7 @@ model Teacher {
   id              Int       @id @default(autoincrement())
   userId          Int       @unique
   user            User      @relation(fields: [userId], references: [id])
-  department      String
+  department      String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   lectures        Lecture[]
