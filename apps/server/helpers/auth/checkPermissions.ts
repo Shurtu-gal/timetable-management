@@ -46,6 +46,7 @@ export type CheckPermissionsType = {
     error: ErrorParam,
   ) => Response<unknown, Record<string, unknown>> | Error;
   requiredRoles: ROLE[];
+  viewId?: number;
 };
 
 const checkBasePermissions = async ({
@@ -53,16 +54,31 @@ const checkBasePermissions = async ({
   successHandler,
   errorHandler,
   requiredRoles,
+  viewId,
 }: CheckPermissionsType) => {
   if (!ctx.auth) return errorHandler(ERRORS.UNAUTHORIZED);
 
   try {
-    if (
-      requiredRoles.some(role => role === ctx.auth?.role) ||
-      ctx.auth?.role === ROLE.SUPERADMIN ||
-      requiredRoles.length === 0
-    ) {
+    if (ctx.auth?.role === ROLE.SUPERADMIN || requiredRoles.length === 0) {
       return successHandler();
+    }
+
+    const role = requiredRoles.find(role => role === ctx.auth?.role);
+
+    if (!role) return errorHandler(ERRORS.FORBIDDEN);
+
+    switch (ctx.auth?.role) {
+      case ROLE.ADMIN:
+        if (ctx.auth?.admin?.collegeId === viewId) return successHandler();
+        break;
+      case ROLE.TEACHER:
+        if (ctx.auth?.teacher?.collegeId === viewId) return successHandler();
+        break;
+      case ROLE.STUDENT:
+        if (ctx.auth?.student?.classId === viewId) return successHandler();
+        break;
+      default:
+        return errorHandler(ERRORS.FORBIDDEN);
     }
 
     return errorHandler(ERRORS.FORBIDDEN);
@@ -75,6 +91,7 @@ const checkBasePermissions = async ({
 export const checkPermissions = (
   context: Context,
   requiredRoles: ROLE[],
+  viewId?: number,
 ): Promise<boolean | Error> => {
   const successHandler = () => true;
 
@@ -83,5 +100,6 @@ export const checkPermissions = (
     successHandler,
     errorHandler: gqlErrorHandler,
     requiredRoles,
+    viewId,
   }) as Promise<boolean | Error>;
 };

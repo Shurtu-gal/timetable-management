@@ -9,16 +9,25 @@ type Decoded = JwtPayload & {
 };
 
 export const verifyUser = async (req: Request) => {
-  const token = req.headers.authorization || '';
-  if (!token) return null;
+  try {
+    const token = req.headers.authorization || '';
+    if (!token) return null;
 
-  const bearer = token.split(' ')[1];
-  if (!bearer) return null;
+    const bearer = token.split(' ')[1];
+    if (!bearer) return null;
 
-  const decoded = jwt.verify(bearer, JWT_SECRET || '') as Decoded;
+    const decoded = jwt.verify(bearer, JWT_SECRET || '') as Decoded;
 
-  const authUser = await prisma.user.findUnique({
-    where: { id: decoded.userId },
-  });
-  return authUser;
+    const authUser = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      include: {
+        admin: true,
+        student: true,
+        teacher: true,
+      },
+    });
+    return authUser;
+  } catch (error) {
+    return null;
+  }
 };

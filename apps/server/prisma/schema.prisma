@@ -1,5 +1,8 @@
-generator client {
-  provider = "prisma-client-js"
+generator erd {
+  provider = "prisma-erd-generator"
+  erdDebug = true
+  // includeRelationFromFields = true
+  output = "./ERD.png"
 }
 
 datasource db {
@@ -7,153 +10,190 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum GENDER {
+enum Gender {
   MALE
   FEMALE
-  OTHERS
+  OTHER
 }
 
-enum ROLE {
-  STUDENT
-  TEACHER
+enum Role {
+  USER
   ADMIN
-  SUPERADMIN
+}
+
+enum Status {
+  DRAFT
+  PENDING
+  ACTIVE
+  REJECTED
+  EXPIRED
+}
+
+enum TaskStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+}
+
+enum TaskType {
+  GIVE_STARS
+  TWEET // post on twitter
+  INSTA // post on instagram
+  LINKEDIN // post on linkedin
+  PHOTO // upload photo or screenshot
+  VIDEO // upload video
+  TEXT // write text
+  AUDIO // upload audio
+  CODE // upload code
+  OTHER // other
+}
+
+enum TaskValidationType {
+  MANUAL
+  AUTOMATIC
+  PEER_REVIEW
+}
+
+enum SubmissionStatus {
+  DRAFT
+  PENDING
+  REJECTED
+  ACCEPTED
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+model Social {
+  id        Int     @id @default(autoincrement())
+  linkedin  String?
+  twitter   String?
+  instagram String?
+  user      User?
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  uid       String    @unique // Roll Number or Employee Id
-  firstName String
-  lastName  String
-  dob       DateTime?
-  email     String?
-  gender    GENDER
-  mobile    String?
-  profile   String?
-  password  String
-  role      ROLE?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  student   Student?
-  teacher   Teacher?
-  admin     Admin?
+  id          Int          @id @default(autoincrement())
+  firstName   String
+  lastName    String
+  username    String       @unique
+  email       String       @unique
+  password    String?
+  gender      Gender
+  profile     String       @default("https://res.cloudinary.com/dx3a3kduq/image/upload/v1/avatars/default.png")
+  referrer    String?
+  socialId    Int?         @unique
+  social      Social?      @relation(fields: [socialId], references: [id])
+  role        Role         @default(USER)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  deletedAt   DateTime?
+  // organizedEvents Event[]      @relation("organizers")
+  // managedEvents   Event[]      @relation("managers")
+  submissions Submission[]
+  validations Task[] @relation("validator")
 
-  comments Comment[]
+  // Unneeded fields, just for PRISMA to generate the schema
+  EventToOrganizer EventToOrganizer[]
+  EventToManager   EventToManager[]
 }
 
-model Student {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @unique
-  user      User     @relation(fields: [userId], references: [id])
-  classId   Int      
-  class     Class    @relation(fields: [classId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Event {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String
+  slug        String    @unique
+  poster      String    @default("https://res.cloudinary.com/dx3a3kduq/image/upload/v1/events/default.png")
+  startDate   DateTime
+  endDate     DateTime
+  location    String
+  organizerId Int[]
+  managerId   Int[]
+  // organizers  User[]    @relation("organizers", fields: [organizerId], references: [id])
+  // managers    User[]    @relation("managers", fields: [managerId], references: [id])
+  prizes      Prize[]
+  status      Status    @default(DRAFT)
+  contacts    String[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  tasks       Task[]  
+
+  // Unneeded fields, just for PRISMA to generate the schema
+  EventToOrganizer EventToOrganizer[]
+  EventToManager   EventToManager[]
 }
 
-model Teacher {
-  id              Int       @id @default(autoincrement())
-  userId          Int       @unique
-  user            User      @relation(fields: [userId], references: [id])
-  department      String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  lectures        Lecture[]
-  collegeId       Int       
-  college         College   @relation(fields: [collegeId], references: [id])
-  assignedClasses Class[]
-}
-
-model Admin {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @unique
-  user      User     @relation(fields: [userId], references: [id])
-  collegeId Int      @unique
-  college   College  @relation(fields: [collegeId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model College {
+model Prize {
   id          Int       @id @default(autoincrement())
   name        String
-  description String?
-  admin       Admin?
-  teachers    Teacher[]
-  classes     Class[]
-  courses     Course[]
+  amount      Int?
+  description String
+  event       Event     @relation(fields: [eventId], references: [id])
+  eventId     Int
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
 }
 
-model Class {
-  id          Int       @id @default(autoincrement())
-  department  String
-  semester    Int
-  collegeId   Int       
-  college     College   @relation(fields: [collegeId], references: [id])
-  description String?
-  facultyId   Int?
-  faculty     Teacher?  @relation(fields: [facultyId], references: [id])
-  lectures    Lecture[]
-  students    Student[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-
-model Course {
-  id          Int       @id @default(autoincrement())
+model Task {
+  id          Int                @id @default(autoincrement())
   name        String
-  type        String?
-  credits     Int?
-  collegeId   Int
-  college     College   @relation(fields: [collegeId], references: [id])
-  description String?
-  lectures    Lecture[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  tagline     String?
+  description String
+  eventId     Int
+  event       Event              @relation(fields: [eventId], references: [id])
+  points      Int                @default(0)
+  difficulty  Difficulty         @default(EASY)
+  dueDate     DateTime
+  status      TaskStatus         @default(DRAFT)
+  validator   User?              @relation("validator", fields: [validatorId], references: [id])
+  validatorId Int?
+  type        TaskType           @default(OTHER)
+  validation  TaskValidationType
+  tags        String[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  deletedAt   DateTime?
+  submissions Submission[]
 }
 
-model Lecture {
-  name         String
-  section      String?
-  instructorId Int       
-  instructor   Teacher   @relation(fields: [instructorId], references: [id])
-  courseId     Int
-  course       Course    @relation(fields: [courseId], references: [id])
-  classId      Int
-  class        Class     @relation(fields: [classId], references: [id])
-  timeSlot     TimeSlot[]
-  description  String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
-  @@id([courseId, classId])
+model Submission {
+  id          Int              @id @default(autoincrement())
+  user        User             @relation(fields: [userId], references: [id])
+  userId      Int
+  task        Task             @relation(fields: [taskId], references: [id])
+  taskId      Int
+  content     String
+  attachments String[]
+  status      SubmissionStatus @default(DRAFT)
+  points      Int?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  deletedAt   DateTime?
 }
 
-model TimeSlot {
-  id         Int       @id @default(autoincrement())
-  day        String
-  startTime  String
-  endTime    String
-  extraClass Boolean?
-  date       DateTime?
-  room       String?
-  courseId   Int
-  classId    Int
-  lecture    Lecture?  @relation(fields: [courseId, classId], references: [courseId, classId])
-  comments   Comment[]
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+// Unneeded models, just for PRISMA to generate the schema
+
+model EventToOrganizer {
+  userId  Int
+  eventId Int
+  User    User  @relation(fields: [userId], references: [id])
+  Event   Event @relation(fields: [eventId], references: [id])
+
+  @@id([userId, eventId])
+  @@map("event_to_organizer")
 }
 
-model Comment {
-  id         Int      @id @default(autoincrement())
-  text       String
-  userId     Int
-  user       User     @relation(fields: [userId], references: [id])
-  timeSlotId Int
-  timeSlot   TimeSlot @relation(fields: [timeSlotId], references: [id])
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+model EventToManager {
+  userId  Int
+  eventId Int
+  User    User  @relation(fields: [userId], references: [id])
+  Event   Event @relation(fields: [eventId], references: [id])
+
+  @@id([userId, eventId])
+  @@map("event_to_manager")
 }

@@ -48,8 +48,8 @@ export const TimeSlotCreateInputType = inputObjectType({
     t.nonNull.string('day');
     t.nonNull.string('startTime');
     t.nonNull.string('endTime');
-    t.nonNull.int('classId');
-    t.nonNull.int('courseId');
+    t.int('classId');
+    t.int('courseId');
     t.date('date');
     t.boolean('extraClass');
     t.string('room');

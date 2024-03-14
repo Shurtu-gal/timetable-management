@@ -44,6 +44,52 @@ export const createLecture = mutationField('createLecture', {
         },
       });
 
+      await prisma.user.update({
+        where: {
+          id: teacher_.userId,
+        },
+        data: {
+          role: 'TEACHER',
+        },
+      });
+
+      if (teacher_) instructorId = teacher_.id;
+      else throw new Error('Error creating teacher');
+    } else if (!data.instructorId && data.instructor?.userId) {
+      const teacher = await prisma.teacher.findUnique({
+        where: {
+          userId: data.instructor?.userId || undefined,
+        },
+      });
+
+      if (teacher) throw new Error('Teacher already exists');
+
+      const [teacher_] = await prisma.$transaction([
+        prisma.teacher.create({
+          data: {
+            department: data.instructor?.department || undefined,
+            user: {
+              connect: {
+                id: data.instructor?.userId || undefined,
+              },
+            },
+            college: {
+              connect: {
+                id: data.instructor?.collegeId || undefined,
+              },
+            },
+          },
+        }),
+        prisma.user.update({
+          where: {
+            id: data.instructor?.userId || undefined,
+          },
+          data: {
+            role: 'TEACHER',
+          },
+        }),
+      ]);
+
       if (teacher_) instructorId = teacher_.id;
       else throw new Error('Error creating teacher');
     }
@@ -68,6 +114,20 @@ export const createLecture = mutationField('createLecture', {
             id: (data.instructorId || instructorId) as number,
           },
         },
+        timeSlot: data.timeSlots
+          ? {
+              createMany: {
+                data: data.timeSlots?.map(timeSlot => ({
+                  startTime: timeSlot.startTime,
+                  endTime: timeSlot.endTime,
+                  day: timeSlot.day,
+                  extraClass: timeSlot.extraClass || undefined,
+                  date: timeSlot.date || undefined,
+                  room: timeSlot.room || undefined,
+                })),
+              },
+            }
+          : undefined,
       },
     });
   },
